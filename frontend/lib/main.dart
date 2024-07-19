@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'custom_colors.dart';
-import 'landing_page.dart'; 
-
+import 'landing_page.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -51,22 +50,13 @@ class SplashScreen extends StatelessWidget {
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LandingPage()),
+        MaterialPageRoute(builder: (context) => const LandingPage()),
       );
     });
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [Colors.blue, Colors.white],
-          ),
-        ),
-        child: Center(
-          child: Image.asset('assets/images/logo.png', width: 150, height: 150),
-        ),
+      body: Center(
+        child: Image.asset('assets/images/logo.png', width: 150, height: 150),
       ),
     );
   }

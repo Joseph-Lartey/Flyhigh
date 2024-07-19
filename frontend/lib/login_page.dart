@@ -1,9 +1,11 @@
-// login_page.dart
-
 import 'package:flutter/material.dart';
 import 'custom_colors.dart';
+import 'sign_up.dart';
+import 'otp.dart'; // Import the OTP verification page
 
 class LoginPage extends StatelessWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,7 +16,7 @@ class LoginPage extends StatelessWidget {
           children: [
             const SizedBox(height: 40),
             IconButton(
-              icon:const  Icon(Icons.arrow_back),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -31,18 +33,18 @@ class LoginPage extends StatelessWidget {
                   const Text(
                     'WELCOME TO FLYHIGH',
                     style: TextStyle(
-                    fontFamily: 'SourceSansPro',
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                      fontFamily: 'SourceSansPro',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
                   const Text(
                     'Welcome back! Login or sign up to start flying',
                     style: TextStyle(
-                        fontFamily: 'SourceSansPro',
-                          fontSize: 14,
-                          ),
+                      fontFamily: 'SourceSansPro',
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 30),
                   const TextField(
@@ -64,17 +66,20 @@ class LoginPage extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: Text('forgot password?'),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 50),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      backgroundColor:  CustomColors.primaryColor, // Change this to your primary color
+                      backgroundColor: CustomColors.primaryColor, // Change this to your primary color
                     ),
                     onPressed: () {
-                      // Handle login action
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const OtpVerificationPage()),
+                      );
                     },
                     child: const Center(
                       child: Text(
@@ -91,7 +96,7 @@ class LoginPage extends StatelessWidget {
                     children: [
                       Expanded(child: Divider()),
                       Padding(
-                        padding:  EdgeInsets.symmetric(horizontal: 8.0),
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text('OR'),
                       ),
                       Expanded(child: Divider()),
@@ -105,21 +110,24 @@ class LoginPage extends StatelessWidget {
                         'assets/images/google.png',
                         height: 40,
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 120), // Increased space between logos
                       Image.asset(
                         'assets/images/apple.png',
                         height: 40,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 120), // Increased space before the "Don't have an account?" section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text("Don't have an account?"),
                       TextButton(
                         onPressed: () {
-                          // Handle sign up action
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const SignUpPage()),
+                          );
                         },
                         child: const Text('Sign up'),
                       ),

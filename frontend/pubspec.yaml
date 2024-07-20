@@ -13,6 +13,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   pin_code_fields: ^7.3.0
   flutter_otp_text_field: ^1.1.2
+  image_picker: ^0.8.5+3
+  font_awesome_flutter: ^10.1.0
 
 dev_dependencies:
   flutter_test:
@@ -25,6 +27,8 @@ flutter:
   assets:
     - assets/images/logo.png
     - assets/images/img1.jpg
+    - assets/images/img2.jpg
+    - assets/images/img3.png
     - assets/images/
 
   fonts:

@@ -1,10 +1,10 @@
-// landing_page.dart
-
 import 'package:flutter/material.dart';
 import 'custom_colors.dart';
-import 'login_page.dart'; // Import the login page
+import 'login_page.dart'; 
 
 class LandingPage extends StatelessWidget {
+  const LandingPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,8 +26,8 @@ class LandingPage extends StatelessWidget {
                   color: Colors.black.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Center(
-                  child: const Column(
+                child:  const Center(
+                  child:  Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
@@ -67,7 +67,7 @@ class LandingPage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
+                      MaterialPageRoute(builder: (context) => const LoginPage()),
                     );
                   },
                   child: const Row(

@@ -8,7 +8,9 @@ header('content-Type: application/json');
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/app/controllers/userController.php';
-require_once __DIR__ . '/app/middleware/validationmiddleware.php';
+require_once __DIR__ . '/app/controllers/ForgetPasswordController.php';
+require_once __DIR__ . '/app/middleware/validationMiddleware.php';
+require_once __DIR__ . '/app/controllers/changePasswordController.php';
 
 use Dotenv\Dotenv;
 

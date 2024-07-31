@@ -2,9 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:frontend/profile_page.dart';
 import 'custom_colors.dart';
+import '../services/otpservice.dart';
 
 class OtpVerificationPage extends StatelessWidget {
-  const OtpVerificationPage({Key? key}) : super(key: key);
+  final String email;
+  const OtpVerificationPage({Key? key, required this.email}) : super(key: key);
+
+  void _verifyOTP(BuildContext context, String otp) {
+    if (OTPService.verifyOTP(otp)) {
+      // If OTP is verified, navigate to the profile page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
+      );
+    } else {
+      // If OTP is not verified, show an error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid OTP. Please try again.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +50,7 @@ class OtpVerificationPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              'OTP has been sent to your e-mail address, please enter the OTP in the bottom',
+              'OTP has been sent to your e-mail address, please enter the OTP below',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'SourceSansPro',
@@ -44,7 +61,7 @@ class OtpVerificationPage extends StatelessWidget {
             const Icon(Icons.lock_outline, size: 50),
             const SizedBox(height: 30),
             OtpTextField(
-              numberOfFields: 4,
+              numberOfFields: 6, // Updated to match your OTP length
               borderColor: Color(0xFF512DA8),
               showFieldAsBox: true,
               onCodeChanged: (String code) {
@@ -52,16 +69,13 @@ class OtpVerificationPage extends StatelessWidget {
               },
               // runs when every textfield is filled
               onSubmit: (String verificationCode) {
-                // handle OTP submission
-              }, // end onSubmit
+                _verifyOTP(context, verificationCode); // handle OTP submission
+              },
             ),
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ProfilePage()),
-                      );
+                // Manually get the OTP entered by the user if needed
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: CustomColors.primaryColor, // Background color
@@ -75,7 +89,7 @@ class OtpVerificationPage extends StatelessWidget {
               ),
               child: const Text(
                 'VERIFY',
-                style: TextStyle(color: Colors.white), 
+                style: TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -83,4 +97,4 @@ class OtpVerificationPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

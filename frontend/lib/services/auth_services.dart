@@ -7,7 +7,7 @@ class AuthService {
 
   // Register users
   Future<Map<String, dynamic>> register(String firstname, String lastname,
-      String username, String email, String password, String dob) async {
+      String username, String email, String password) async {
     final response = await http.post(Uri.parse('$baseUrl/users'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -17,7 +17,6 @@ class AuthService {
           'email': email,
           'password': password,
           'confirm_password': password,
-          'dob': dob
         }));
 
     if (response.statusCode == 500 || response.statusCode == 503) {
@@ -36,21 +35,14 @@ class AuthService {
     if (response.statusCode == 500 || response.statusCode == 503) {
       throw Exception("Server error");
     } else {
-      final data = jsonDecode(response.body);
-
-      // Save user data to local storage
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString('user_id', data['id'].toString());
-
-      return data;
+      final responseBody = jsonDecode(response.body);
+      if (responseBody['success'] == true) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('userId', responseBody['id']);
+        await prefs.setString('email', email);
+      }
+      return responseBody;
     }
-  }
-
-  // Logout users
-  Future<void> logout() async {
-    // Remove user data from local storage
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('user_id');
   }
 
   // Get the profile details of a user
@@ -64,10 +56,22 @@ class AuthService {
     }
   }
 
-  // Check if the user is logged in
+  // Check if user is logged in
   Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('user_id');
-    return userId != null;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('userId');
+  }
+
+  // Log out user
+  Future<void> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userId');
+    await prefs.remove('email');
+  }
+
+  // Get userId from shared preferences
+  Future<int?> getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('userId');
   }
 }

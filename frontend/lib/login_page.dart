@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'custom_colors.dart';
 import 'sign_up.dart';
-import 'otp.dart'; // Import the OTP verification page
+import 'profile_page.dart';
+ 
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -78,7 +79,7 @@ class LoginPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const OtpVerificationPage()),
+                        MaterialPageRoute(builder: (context) => const ProfilePage()),
                       );
                     },
                     child: const Center(
@@ -110,14 +111,14 @@ class LoginPage extends StatelessWidget {
                         'assets/images/google.png',
                         height: 40,
                       ),
-                      const SizedBox(width: 120), // Increased space between logos
+                      const SizedBox(width: 120), 
                       Image.asset(
                         'assets/images/apple.png',
                         height: 40,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 120), // Increased space before the "Don't have an account?" section
+                  const SizedBox(height: 120), 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

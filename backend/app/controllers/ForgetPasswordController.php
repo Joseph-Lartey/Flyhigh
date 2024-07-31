@@ -80,7 +80,7 @@ class ForgetPasswordController
         $mail->SMTPSecure = $_ENV["MAIL_SMTPSECURE"];
         $mail->Port = $_ENV["MAIL_PORT"];
 
-        $mail->setFrom('no-reply@example.com', 'nack');
+        $mail->setFrom('no-reply@example.com', 'Flyhigh');
         $mail->addAddress($email);
 
         $mail->isHTML(true);

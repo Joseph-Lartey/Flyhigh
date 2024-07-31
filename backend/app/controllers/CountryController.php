@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../models/Country.php';
+
 class CountryController
 {
     private $countryModel;

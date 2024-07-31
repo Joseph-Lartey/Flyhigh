@@ -74,7 +74,7 @@ class ForgetPasswordController
         $mail->isSMTP();
         $mail->Host = $_ENV["MAIL_HOST"];  
         $mail->SMTPAuth = true;
-        $mail->Username = $_ENV["MAIL_USERNAME"];  
+        $mail->Username = $_ENV["MAIL_USERNAME"];
         $mail->Password = $_ENV["MAIL_PASSWORD"]; 
         $mail->SMTPSecure = $_ENV["MAIL_SMTPSECURE"];
         $mail->Port = $_ENV["MAIL_PORT"];

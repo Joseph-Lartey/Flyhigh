@@ -107,15 +107,7 @@ $router->map('POST', '/user/reset_password', function () use ($userController) {
     echo json_encode($userController->resetPassword($data['email'], $data['new_password']));
 });
 
-$match = $router->match();
 
-if ($match && is_callable($match['target'])) {
-    call_user_func_array($match['target'], $match['params']);
-} else {
-    // No route was matched
-    http_response_code(404);
-    echo json_encode(['status' => 'error', 'message' => 'Route not found']);
-}
 
 $router->map('POST', '/user/change_password', function () use ($changePasswordController) {
     $data = json_decode(file_get_contents('php://input'), true);

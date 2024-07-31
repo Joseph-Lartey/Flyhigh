@@ -83,20 +83,20 @@ class User extends Model
         return $stmt->execute(['password' => $password_hash, 'email' => $email]);
     }
 
-    public function changePassword($userId, $oldPassword, $newPassword)
+    public function changePassword($user_id, $oldPassword, $newPassword)
     {
-        $user = $this->findById($userId);
+        $user = $this->findById($user_id);
         
         if ($user && password_verify($oldPassword, $user['password'])) {
             $password_hash = password_hash($newPassword, PASSWORD_DEFAULT);
             $sql = "UPDATE {$this->table} SET password = :password WHERE userId = :userId";
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute(['password' => $password_hash, 'userId' => $userId]);
+            return $stmt->execute(['password' => $password_hash, 'userId' => $user_id]);
         } else {
-            return false; // Invalid current password
+            return false; //Invalid current password
         }
     }
-
+    
     public function findById($userId)
     {
         $sql = "SELECT * FROM {$this->table} WHERE userId = :userId";

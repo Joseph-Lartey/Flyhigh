@@ -25,6 +25,7 @@ $database = new Database();
 $pdo = $database->getPdo();
 
 $userController = new UserController($pdo);
+$forgetPasswordController = new ForgetPasswordController($pdo);
 
 // Routes
 // Below I will define all the different end points that the user can send requests to
@@ -100,14 +101,6 @@ $router->map('POST', '/profile', function () use ($userController) {
     ));
 });
 
-// Catering for a user resetting their password
-$router->map('POST', '/user/reset_password', function () use ($userController) {
-    $data = json_decode(file_get_contents('php://input'), true);
-    ValidationMiddleWare::handle($data, ['email' => 'email']);
-    echo json_encode($userController->resetPassword($data['email'], $data['new_password']));
-});
-
-
 
 $router->map('POST', '/user/change_password', function () use ($changePasswordController) {
     $data = json_decode(file_get_contents('php://input'), true);
@@ -125,4 +118,13 @@ $router->map('POST', '/user/reset_password', function () use ($forgetPasswordCon
     ValidationMiddleWare::handle($data, ['email' => 'email']);
     echo json_encode($forgetPasswordController->resetPassword($data));
 });
+
+$match = $router->match();
+
+if ($match && is_callable($match['target'])) {
+    call_user_func_array($match['target'], $match['params']);
+} else {
+    http_response_code(404);
+    echo json_encode(['status' => 'error', 'message' => 'Route not found']);
+}
 ?>

@@ -87,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final imageExtension = path.extension(_profileImage!.path).replaceAll('.', '');
     final mediaType = MediaType('image', imageExtension);
 
-    final uri = Uri.parse('http://16.171.150.101/Final_project/backend/upload/$userId');
+    final uri = Uri.parse('http://16.171.150.101/Flyhigh/backend/upload/$userId');
     final request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath(
           'profile_image', _profileImage!.path,
@@ -108,9 +108,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final email = authProvider.registrationDetails['email'];
     final firstname = authProvider.registrationDetails['firstname'];
     final lastname = authProvider.registrationDetails['lastname'];
-    final username = authProvider.registrationDetails['username'];
+    final username = _usernameController.text; // Updated to get the username from the controller
     final password = authProvider.registrationDetails['password'];
-    final confirmPassword = authProvider.registrationDetails['password'];
+    final confirmPassword = authProvider.registrationDetails['confirmPassword'];
 
     print('Attempting registration with email: $email, username: $username');
     print(
@@ -119,9 +119,10 @@ class _ProfilePageState extends State<ProfilePage> {
     if (email != null &&
         password != null &&
         firstname != null &&
-        lastname != null) {
+        lastname != null &&
+        username.isNotEmpty) {
       final response = await http.post(
-        Uri.parse('http://16.171.150.101/Final_project/backend/user'),
+        Uri.parse('http://16.171.150.101/Flyhigh/backend/user'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
@@ -129,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
           'confirm_password': confirmPassword,
           'firstname': firstname,
           'lastname': lastname,
-          'username': username,
+          'username': username, // Ensure username is sent in the registration request
         }),
       );
       print('Registration response status: ${response.statusCode}');
@@ -145,7 +146,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             // Create profile
             final profileResponse = await http.post(
-              Uri.parse('http://16.171.150.101/Final_project/backend/profile'),
+              Uri.parse('http://16.171.150.101/Flyhigh/backend/profile'),
               headers: {'Content-Type': 'application/json'},
               body: jsonEncode({
                 'userId': userId,
@@ -165,7 +166,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const MyFlightsPage()),
-                          );
+                );
               } else {
                 print('Profile creation failed!');
               }

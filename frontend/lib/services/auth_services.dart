@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  final String baseUrl = "http://16.171.150.101/N.A.C.K/backend";
+  final String baseUrl = "http://16.171.150.101/Flyhigh/backend";
 
   // Register users
   Future<Map<String, dynamic>> register(String firstname, String lastname,

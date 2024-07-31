@@ -16,7 +16,7 @@ $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 $router = new AltoRouter();
-$router->setBasePath('/Final_project/backend');
+$router->setBasePath('/Flyhigh/backend');
 
 // create database and pdo
 $database = new Database();

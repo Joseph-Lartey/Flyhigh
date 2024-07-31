@@ -4,12 +4,14 @@ import 'custom_colors.dart';
 import 'landing_page.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';  // replace with the actual path to your auth provider file
-import 'sign_up.dart'; 
+import 'services/otpservice.dart';
+import 'userprofile.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
   ));
+  OTPService.configure(); 
   runApp(
     MultiProvider(
       providers: [
@@ -47,7 +49,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const SplashScreen(),
+      home: const SplashScreen(), //
     );
   }
 }

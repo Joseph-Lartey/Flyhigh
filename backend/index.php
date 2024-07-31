@@ -114,4 +114,21 @@ if ($match && is_callable($match['target'])) {
     http_response_code(404);
     echo json_encode(['status' => 'error', 'message' => 'Route not found']);
 }
+
+$router->map('POST', '/user/change_password', function () use ($changePasswordController) {
+    $data = json_decode(file_get_contents('php://input'), true);
+    ValidationMiddleWare::handle($data, [
+        'userId' => 'integer',
+        'oldPassword' => 'string',
+        'newPassword' => 'string',
+        'confirmPassword' => 'string'
+    ]);
+    echo json_encode($changePasswordController->changePassword($data));
+});
+
+$router->map('POST', '/user/reset_password', function () use ($forgetPasswordController) {
+    $data = json_decode(file_get_contents('php://input'), true);
+    ValidationMiddleWare::handle($data, ['email' => 'email']);
+    echo json_encode($forgetPasswordController->resetPassword($data));
+});
 ?>

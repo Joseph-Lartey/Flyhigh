@@ -1,4 +1,3 @@
-
 import 'package:email_otp/email_otp.dart';
 
 class OTPService {
@@ -18,7 +17,7 @@ class OTPService {
       emailPort: EmailPort.port587,
       secureType: SecureType.tls,
       username: 'josephlartey414@gmail.com',
-      password: 'tlza csic mpxh cvll',
+      password: 'tlza csic mpxh cvll', // Ensure this is an app-specific password
     );
 
     // Custom email template with your specified colors
@@ -36,8 +35,18 @@ class OTPService {
     );
   }
 
-  static void sendOTP(String email) {
-    EmailOTP.sendOTP(email: email);
+  static Future<void> sendOTP(String email) async {
+    print('Sending OTP to $email');
+    try {
+      bool success = await EmailOTP.sendOTP(email: email);
+      if (success) {
+        print('OTP sent successfully to $email');
+      } else {
+        print('Failed to send OTP to $email');
+      }
+    } catch (error) {
+      print('Error sending OTP: $error');
+    }
   }
 
   static bool verifyOTP(String otp) {

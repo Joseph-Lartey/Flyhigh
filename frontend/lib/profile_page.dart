@@ -7,7 +7,6 @@ import '../providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path;
-import 'my_flight.dart'; 
 import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {

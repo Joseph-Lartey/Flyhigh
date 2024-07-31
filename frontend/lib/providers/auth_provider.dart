@@ -41,23 +41,27 @@ class AuthProvider with ChangeNotifier {
   // User login
   Future<void> login(String email, String password) async {
     setLoading(true);
+    print('Login started with email: $email and password: $password');
 
     try {
       final loginResponse = await _authService.login(email, password);
+      print('Login response: $loginResponse');
 
       if (loginResponse['success'] == true) {
         _loginSuccess = true;
         final profileDetails = await _authService.getProfile(loginResponse['id']);
+        print('Profile details: $profileDetails');
         _user = User.fromJson(profileDetails);
       } else {
         _loginSuccess = false;
         _errorMessage = loginResponse['error'];
+        print('Login failed: $_errorMessage');
       }
-
       setLoading(false);
     } catch (e) {
       _loginSuccess = false;
       _errorMessage = e.toString();
+      print('Login exception: $_errorMessage');
       setLoading(false);
     }
   }
@@ -65,13 +69,16 @@ class AuthProvider with ChangeNotifier {
   // User registration
   Future<void> register() async {
     setLoading(true);
+    print('Registration started with details: $_registrationDetails');
     try {
       final registerResponse = await _authService.register(
-          _registrationDetails['firstname']!,
-          _registrationDetails['lastname']!,
-          _registrationDetails['username']!,
-          _registrationDetails['email']!,
-          _registrationDetails['password']!);
+        _registrationDetails['firstname']!,
+        _registrationDetails['lastname']!,
+        _registrationDetails['username']!,
+        _registrationDetails['email']!,
+        _registrationDetails['password']!,
+      );
+      print('Registration response: $registerResponse');
 
       if (registerResponse['success'] == true) {
         _registrationSuccess = true;
@@ -79,11 +86,13 @@ class AuthProvider with ChangeNotifier {
       } else {
         _registrationSuccess = false;
         _errorMessage = registerResponse['error'];
+        print('Registration failed: $_errorMessage');
       }
       setLoading(false);
     } catch (e) {
       _registrationSuccess = false;
       _errorMessage = e.toString();
+      print('Registration exception: $_errorMessage');
       setLoading(false);
     }
   }

@@ -248,8 +248,8 @@ class _SignUpPageState extends State<SignUpPage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 150,
-                        vertical: 16,
+                        horizontal: 100,
+                        vertical: 5,
                       ),
                     ),
                     child: const Text(

@@ -1,11 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'custom_colors.dart';
 import 'sign_up.dart';
 import 'profile_page.dart';
- 
+import '../providers/auth_provider.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final email = _emailController.text;
+    final password = _passwordController.text;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    await authProvider.login(email, password);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (authProvider.loginSuccess ?? false) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
+      );
+    } else {
+      _showErrorDialog(authProvider.errorMessage ?? 'Login failed');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,19 +104,22 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
                       labelText: 'Email',
                       border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(
                       labelText: 'Password',
                       border: OutlineInputBorder(),
                       suffixIcon: Icon(Icons.visibility),
                     ),
+                    obscureText: true,
                   ),
                   const SizedBox(height: 10),
                   const Align(
@@ -76,21 +135,20 @@ class LoginPage extends StatelessWidget {
                       ),
                       backgroundColor: CustomColors.primaryColor, // Change this to your primary color
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ProfilePage()),
-                      );
-                    },
-                    child: const Center(
-                      child: Text(
-                        'LOGIN',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    onPressed: _isLoading ? null : _login,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : const Center(
+                            child: Text(
+                              'LOGIN',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 20),
                   const Row(
@@ -111,14 +169,14 @@ class LoginPage extends StatelessWidget {
                         'assets/images/google.png',
                         height: 40,
                       ),
-                      const SizedBox(width: 120), 
+                      const SizedBox(width: 120),
                       Image.asset(
                         'assets/images/apple.png',
                         height: 40,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 120), 
+                  const SizedBox(height: 120),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

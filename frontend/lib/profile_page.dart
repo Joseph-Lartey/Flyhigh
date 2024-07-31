@@ -7,7 +7,8 @@ import '../providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path;
-import 'my_flight.dart';
+import 'my_flight.dart'; 
+import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -103,14 +104,14 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> _registerAndLogin() async {
+  Future<void> _registerAndNavigateToLogin() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final email = authProvider.registrationDetails['email'];
     final firstname = authProvider.registrationDetails['firstname'];
     final lastname = authProvider.registrationDetails['lastname'];
     final username = _usernameController.text; // Updated to get the username from the controller
     final password = authProvider.registrationDetails['password'];
-    final confirmPassword = authProvider.registrationDetails['confirmPassword'];
+    final confirmPassword = password; // Assuming confirmPassword is the same as password for this context
 
     print('Attempting registration with email: $email, username: $username');
     print(
@@ -127,10 +128,10 @@ class _ProfilePageState extends State<ProfilePage> {
         body: jsonEncode({
           'email': email,
           'password': password,
-          'confirm_password': confirmPassword,
+          'confirm_password': confirmPassword, // Ensure confirmPassword is sent in the registration request
           'firstname': firstname,
           'lastname': lastname,
-          'username': username, // Ensure username is sent in the registration request
+          'username': username,
         }),
       );
       print('Registration response status: ${response.statusCode}');
@@ -139,43 +140,11 @@ class _ProfilePageState extends State<ProfilePage> {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         if (responseBody['success']) {
-          // Registration successful, login the user
-          await authProvider.login(email, password);
-          if (authProvider.user != null) {
-            final userId = authProvider.user!.userId;
-
-            // Create profile
-            final profileResponse = await http.post(
-              Uri.parse('http://16.171.150.101/Flyhigh/backend/profile'),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({
-                'userId': userId,
-                'firstname': firstname,
-                'lastname': lastname,
-                'username': _usernameController.text,
-              }),
-            );
-
-            print('Profile creation response status: ${profileResponse.statusCode}');
-            print('Profile creation response body: ${profileResponse.body}');
-
-            if (profileResponse.statusCode == 200) {
-              final profileResponseBody = jsonDecode(profileResponse.body);
-              if (profileResponseBody['success']) {
-                await _uploadImage(userId);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyFlightsPage()),
-                );
-              } else {
-                print('Profile creation failed!');
-              }
-            } else {
-              print('Profile creation request failed!');
-            }
-          } else {
-            print('Login failed!');
-          }
+          // Registration successful, navigate to login page
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()), // Replace with your login page
+          );
         } else {
           print('Registration failed!');
         }
@@ -312,7 +281,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 minimumSize: Size(double.infinity, 50),
                 backgroundColor: Colors.blue,
               ),
-              onPressed: _isButtonActive ? _registerAndLogin : null,
+              onPressed: _isButtonActive ? _registerAndNavigateToLogin : null,
               child: Text(
                 'Continue',
                 style: TextStyle(

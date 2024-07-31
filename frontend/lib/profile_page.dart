@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'custom_colors.dart';  
+import 'package:http/http.dart' as http;
+import '../providers/auth_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as path;
 import 'my_flight.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -13,7 +18,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _usernameController = TextEditingController();
-  DateTime? _selectedDate;
+  final ImagePicker _imagePicker = ImagePicker();
   File? _profileImage;
   bool _isButtonActive = false;
 
@@ -31,32 +36,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _updateButtonState() {
     setState(() {
-      _isButtonActive = _usernameController.text.isNotEmpty && _selectedDate != null;
+      _isButtonActive = _usernameController.text.isNotEmpty;
     });
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source);
+    final pickedFile = await _imagePicker.pickImage(source: source);
 
     if (pickedFile != null) {
       setState(() {
         _profileImage = File(pickedFile.path);
-      });
-    }
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _updateButtonState();
       });
     }
   }
@@ -92,6 +81,111 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Future<void> _uploadImage(int? userId) async {
+    if (_profileImage == null) return;
+
+    final imageExtension = path.extension(_profileImage!.path).replaceAll('.', '');
+    final mediaType = MediaType('image', imageExtension);
+
+    final uri = Uri.parse('http://16.171.150.101/Final_project/backend/upload/$userId');
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(await http.MultipartFile.fromPath(
+          'profile_image', _profileImage!.path,
+          contentType: mediaType));
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      print('Image uploaded successfully');
+    } else {
+      final responseBody = await response.stream.bytesToString();
+      print('Failed to upload image. Status code: ${response.statusCode}');
+      print('Response: $responseBody');
+    }
+  }
+
+  Future<void> _registerAndLogin() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final email = authProvider.registrationDetails['email'];
+    final firstname = authProvider.registrationDetails['firstname'];
+    final lastname = authProvider.registrationDetails['lastname'];
+    final username = authProvider.registrationDetails['username'];
+    final password = authProvider.registrationDetails['password'];
+    final confirmPassword = authProvider.registrationDetails['password'];
+
+    print('Attempting registration with email: $email, username: $username');
+    print(
+        'Registration details - firstname: $firstname, lastname: $lastname, password: $password, confirmPassword: $confirmPassword');
+
+    if (email != null &&
+        password != null &&
+        firstname != null &&
+        lastname != null) {
+      final response = await http.post(
+        Uri.parse('http://16.171.150.101/Final_project/backend/user'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          'confirm_password': confirmPassword,
+          'firstname': firstname,
+          'lastname': lastname,
+          'username': username,
+        }),
+      );
+      print('Registration response status: ${response.statusCode}');
+      print('Registration response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        if (responseBody['success']) {
+          // Registration successful, login the user
+          await authProvider.login(email, password);
+          if (authProvider.user != null) {
+            final userId = authProvider.user!.userId;
+
+            // Create profile
+            final profileResponse = await http.post(
+              Uri.parse('http://16.171.150.101/Final_project/backend/profile'),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'userId': userId,
+                'firstname': firstname,
+                'lastname': lastname,
+                'username': _usernameController.text,
+              }),
+            );
+
+            print('Profile creation response status: ${profileResponse.statusCode}');
+            print('Profile creation response body: ${profileResponse.body}');
+
+            if (profileResponse.statusCode == 200) {
+              final profileResponseBody = jsonDecode(profileResponse.body);
+              if (profileResponseBody['success']) {
+                await _uploadImage(userId);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyFlightsPage()),
+                          );
+              } else {
+                print('Profile creation failed!');
+              }
+            } else {
+              print('Profile creation request failed!');
+            }
+          } else {
+            print('Login failed!');
+          }
+        } else {
+          print('Registration failed!');
+        }
+      } else {
+        print('Registration request failed!');
+      }
+    } else {
+      print('Required registration details are missing!');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,7 +195,7 @@ class _ProfilePageState extends State<ProfilePage> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            // Handle back button press
+            Navigator.pop(context);
           },
         ),
       ),
@@ -120,7 +214,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                     color: Colors.black,
-                    fontFamily: 'SourceSansPro',
                   ),
                 ),
                 Text(
@@ -128,8 +221,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 22,
-                    color: CustomColors.primaryColor,
-                    fontFamily: 'SourceSansPro',
+                    color: Colors.blue,
                   ),
                 ),
               ],
@@ -141,7 +233,6 @@ class _ProfilePageState extends State<ProfilePage> {
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey,
-                fontFamily: 'SourceSansPro',
               ),
             ),
             SizedBox(height: 20),
@@ -172,7 +263,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       height: 30,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: CustomColors.primaryColor,
+                        color: Colors.blue,
                       ),
                       child: Center(
                         child: Icon(
@@ -193,8 +284,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 'Username',
                 style: TextStyle(
                   fontSize: 16,
-                  color: CustomColors.primaryColor,
-                  fontFamily: 'SourceSansPro',
+                  color: Colors.blue,
                 ),
               ),
             ),
@@ -211,44 +301,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              style: TextStyle(fontFamily: 'SourceSansPro'),
-            ),
-            SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Date of Birth',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: CustomColors.primaryColor,
-                  fontFamily: 'SourceSansPro',
-                ),
-              ),
-            ),
-            SizedBox(height: 8),
-            InkWell(
-              onTap: () => _selectDate(context),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  hintText: 'Select your date of birth',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                child: Text(
-                  _selectedDate != null
-                      ? "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}"
-                      : 'Select your date of birth',
-                  style: TextStyle(
-                    color: _selectedDate != null ? Colors.black : Colors.grey,
-                    fontFamily: 'SourceSansPro',
-                  ),
-                ),
-              ),
             ),
             SizedBox(height: 30),
             ElevatedButton(
@@ -257,26 +309,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 minimumSize: Size(double.infinity, 50),
-                backgroundColor: _isButtonActive ? CustomColors.primaryColor : Colors.grey,
+                backgroundColor: Colors.blue,
               ),
+              onPressed: _isButtonActive ? _registerAndLogin : null,
               child: Text(
                 'Continue',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,
-                  fontFamily: 'SourceSansPro',
                 ),
               ),
-              onPressed: _isButtonActive
-                  ? () {
-                     Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const MyFlightsPage()),
-                      );
-                    }
-                  : null,
             ),
-            SizedBox(height: 20),
           ],
         ),
       ),

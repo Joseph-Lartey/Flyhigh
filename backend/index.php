@@ -7,10 +7,12 @@ header('content-Type: application/json');
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/app/controllers/userController.php';
+require_once __DIR__ . '/app/controllers/UserController.php';
 require_once __DIR__ . '/app/controllers/ForgetPasswordController.php';
-require_once __DIR__ . '/app/middleware/validationmiddleware.php';
-require_once __DIR__ . '/app/controllers/changePasswordController.php';
+require_once __DIR__ . '/app/middleware/ValidationMiddleWare.php';
+require_once __DIR__ . '/app/controllers/ChangePasswordController.php';
+require_once __DIR__ . '/app/controllers/BookingController.php';
+require_once __DIR__ . '/app/controllers/CountryController.php';
 
 use Dotenv\Dotenv;
 
@@ -27,6 +29,8 @@ $pdo = $database->getPdo();
 $userController = new UserController($pdo);
 $forgetPasswordController = new ForgetPasswordController($pdo);
 $changePasswordController = new ChangePasswordController($pdo);
+$bookingController = new BookingController();
+$countryController = new CountryController($pdo);
 
 // Routes
 // Below I will define all the different end points that the user can send requests to
@@ -102,7 +106,7 @@ $router->map('POST', '/profile', function () use ($userController) {
     ));
 });
 
-
+// Cater for password change
 $router->map('POST', '/user/change_password', function () use ($changePasswordController) {
     $data = json_decode(file_get_contents('php://input'), true);
     ValidationMiddleWare::handle($data, [
@@ -114,10 +118,48 @@ $router->map('POST', '/user/change_password', function () use ($changePasswordCo
     echo json_encode($changePasswordController->changePassword($data));
 });
 
+// Cater for password reset
 $router->map('POST', '/user/reset_password', function () use ($forgetPasswordController) {
     $data = json_decode(file_get_contents('php://input'), true);
     ValidationMiddleWare::handle($data, ['email' => 'email']);
     echo json_encode($forgetPasswordController->resetPassword($data));
+});
+
+// Booking Routes
+// Search for flights
+$router->map('POST', '/flights/search', function () use ($bookingController) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    // validate data
+    ValidationMiddleWare::handle($data, [
+        'departure_country_id' => 'integer',
+        'arrival_country_id' => 'integer',
+        'departure_date' => 'date',
+        'flexible_days' => 'integer' // Optional, default will be handled in controller
+    ]);
+
+    echo json_encode($bookingController->searchFlights($data));
+});
+
+// Book a flight
+$router->map('POST', '/flights/book', function () use ($bookingController) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    // validate data
+    ValidationMiddleWare::handle($data, [
+        'user_id' => 'integer',
+        'flight_id' => 'integer',
+        'class_id' => 'integer',
+        'num_people' => 'integer',
+        'weight' => 'integer'
+    ]);
+
+    echo json_encode($bookingController->bookFlight($data));
+});
+
+// Fetch all countries
+$router->map('GET', '/countries', function () use ($countryController) {
+    echo json_encode($countryController->getAllCountries());
 });
 
 $match = $router->match();

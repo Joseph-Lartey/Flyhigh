@@ -3,6 +3,7 @@ import 'package:frontend/my_flight.dart';
 import 'package:provider/provider.dart';
 import 'custom_colors.dart';
 import 'sign_up.dart';
+import 'reset_password.dart';  // Import the ResetPasswordPage
 import '../providers/auth_provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -137,9 +138,24 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: !_passwordVisible,
                         ),
                         const SizedBox(height: 10),
-                        const Align(
+                        Align(
                           alignment: Alignment.centerRight,
-                          child: Text('Forgot password?'),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const ResetPasswordPage()),
+                              );
+                            },
+                            child: const Text(
+                              'Forgot password?',
+                              style: TextStyle(
+                                color: CustomColors.primaryColor,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 50),
                         ElevatedButton(
@@ -153,7 +169,8 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: _isLoading ? null : _login,
                           child: _isLoading
                               ? const CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.white),
                                 )
                               : const Center(
                                   child: Text(
@@ -182,7 +199,8 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignUpPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const SignUpPage()),
                       );
                     },
                     child: const Text('Sign up'),

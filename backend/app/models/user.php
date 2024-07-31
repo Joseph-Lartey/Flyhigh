@@ -91,7 +91,7 @@ class User extends Model
             $password_hash = password_hash($newPassword, PASSWORD_DEFAULT);
             $sql = "UPDATE {$this->table} SET password = :password WHERE user_id = :user_id";
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute(['password' => $password_hash, 'userId' => $user_id]);
+            return $stmt->execute(['password' => $password_hash, 'user_id' => $user_id]);
         } else {
             return false; // Invalid current password
         }

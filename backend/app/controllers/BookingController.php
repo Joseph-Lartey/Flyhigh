@@ -16,33 +16,9 @@ class BookingController {
         $departure_country_id = $data['departure_country_id'];
         $arrival_country_id = $data['arrival_country_id'];
         $departure_date = $data['departure_date'];
-        $flexible_days = isset($data['flexible_days']) ? $data['flexible_days'] : 3; // Default to 3 days flexibility
+        $flexible_days = isset($data['flexible_days']) ? $data['flexible_days'] : 7;
 
-        $stmt = $this->flight->searchFlights($departure_country_id, $arrival_country_id, $departure_date, $flexible_days);
-
-        $flights = array();
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            extract($row);
-            $flight_item = array(
-                "flight_id" => $flight_id,
-                "airline" => $airline,
-                "flight_number" => $flight_number,
-                "departure_country_id" => $departure_country_id,
-                "arrival_country_id" => $arrival_country_id,
-                "departure_airport" => $departure_airport,
-                "arrival_airport" => $arrival_airport,
-                "departure_time" => $departure_time,
-                "arrival_time" => $arrival_time,
-                "duration" => $duration,
-                "price_business" => $price_business,
-                "price_economy" => $price_economy,
-                "price_elite" => $price_elite,
-                "seats_available_business" => $seats_available_business,
-                "seats_available_economy" => $seats_available_economy,
-                "seats_available_elite" => $seats_available_elite
-            );
-            array_push($flights, $flight_item);
-        }
+        $flights = $this->flight->searchFlights($departure_country_id, $arrival_country_id, $departure_date, $flexible_days);
 
         return $flights;
     }

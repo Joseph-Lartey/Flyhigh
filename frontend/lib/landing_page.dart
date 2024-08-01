@@ -34,7 +34,7 @@ class LandingPage extends StatelessWidget {
                         'Find Your Perfect\nFlight',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: CustomColors.primaryColor,
+                          color: Colors.white,
                           fontFamily: 'SourceSansPro',
                           fontWeight: FontWeight.bold,
                           fontSize: 28,

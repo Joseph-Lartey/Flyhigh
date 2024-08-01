@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';  // replace with the actual path to your auth provider file
 import 'services/otpservice.dart';
 import 'userprofile.dart';
+// import 'FlightSelectionPage.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const SplashScreen(), //
+      home: const SplashScreen() , //
     );
   }
 }

@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'custom_colors.dart'; // Adjust the import path as necessary
+import 'package:http/http.dart' as http;
+import 'custom_colors.dart';
+import 'api_service.dart';
+import 'FlightSelectionPage.dart';
 
 class BookingPage extends StatefulWidget {
   const BookingPage({Key? key}) : super(key: key);
@@ -12,38 +16,92 @@ class _BookingPageState extends State<BookingPage> {
   String? _fromLocation;
   String? _toLocation;
   DateTime? _departDate;
-  DateTime? _returnDate;
-  int _passengers = 1;
-  int _luggage = 3;
-  String _class = 'Economy';
+  int? _flexibleDays;
 
-  final List<String> locations = ['Surabaya', 'London City', 'New York', 'Tokyo', 'Paris'];
-  final List<String> classes = ['Economy', 'Business', 'Elite'];
+  List<Map<String, dynamic>> locations = [];
+  final List<int> flexibleDaysOptions = [0, 1, 2, 3, 4, 5, 6, 7];
 
-  Future<void> _selectDate(BuildContext context, bool isDepart) async {
+  final ApiService apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCountries();
+  }
+
+  Future<void> _fetchCountries() async {
+    try {
+      final countries = await apiService.fetchCountries();
+      setState(() {
+        locations = countries;
+        if (!locations.any((element) => element['name'] == _fromLocation)) {
+          _fromLocation = null;
+        }
+        if (!locations.any((element) => element['name'] == _toLocation)) {
+          _toLocation = null;
+        }
+      });
+    } catch (e) {
+      print('Failed to load countries: $e');
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != (_departDate ?? _returnDate))
+    if (picked != null && picked != _departDate) {
       setState(() {
-        if (isDepart) {
-          _departDate = picked;
-        } else {
-          _returnDate = picked;
-        }
+        _departDate = picked;
       });
+    }
   }
+
+Future<void> _searchFlights() async {
+  try {
+    final fromLocation = locations.firstWhere(
+        (element) => element['name'] == _fromLocation,
+        orElse: () => {'id': null})['id'];
+    final toLocation = locations.firstWhere(
+        (element) => element['name'] == _toLocation,
+        orElse: () => {'id': null})['id'];
+
+    print('Searching flights with parameters:');
+    print('From: $fromLocation');
+    print('To: $toLocation');
+    print('Date: ${_departDate?.toIso8601String()}');
+    print('Flexible days: $_flexibleDays');
+
+    final response = await apiService.searchFlights({
+      'departure_country_id': fromLocation,
+      'arrival_country_id': toLocation,
+      'departure_date': _departDate?.toIso8601String(),
+      'flexible_days': _flexibleDays,
+    });
+
+    print('API response: $response');
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => FlightSelectionPage(flights: response)),
+    );
+  } catch (e) {
+    print('Failed to search flights: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to search flights: $e')),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // This extends the body behind the AppBar
-      drawer: Drawer(
-        // Add your drawer items here
-      ),
+      extendBodyBehindAppBar: true,
+      drawer: Drawer(),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -51,15 +109,21 @@ class _BookingPageState extends State<BookingPage> {
             elevation: 0,
             backgroundColor: Colors.transparent,
             expandedHeight: 400,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 children: [
                   Container(
                     width: double.infinity,
-                    height: 400,
+                    height: 380,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/images/img1.jpg'), // Replace with your image asset
+                        image: AssetImage('assets/images/img1.jpg'),
                         fit: BoxFit.cover,
                       ),
                       borderRadius: BorderRadius.only(
@@ -89,7 +153,7 @@ class _BookingPageState extends State<BookingPage> {
                 padding: const EdgeInsets.all(8.0),
                 child: CircleAvatar(
                   radius: 25,
-                  backgroundImage: AssetImage('assets/images/img3.png'), // Replace with your profile image asset
+                  backgroundImage: AssetImage('assets/images/img3.png'),
                 ),
               ),
             ],
@@ -102,7 +166,6 @@ class _BookingPageState extends State<BookingPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Flight booking form
                       _buildFlightBookingForm(),
                       SizedBox(height: 16),
                     ],
@@ -119,26 +182,24 @@ class _BookingPageState extends State<BookingPage> {
   Widget _buildFlightBookingForm() {
     return Column(
       children: [
-        _buildDropdownRow('FROM', 'Surabaya', (String? newValue) {
+        _buildDropdownRow('FROM', 'Select Departure', (String? newValue) {
           setState(() {
             _fromLocation = newValue;
           });
-        }),
+        }, _fromLocation),
         SizedBox(height: 16),
-        _buildDropdownRow('TO', 'London City', (String? newValue) {
+        _buildDropdownRow('TO', 'Select Destination', (String? newValue) {
           setState(() {
             _toLocation = newValue;
           });
-        }),
+        }, _toLocation),
         SizedBox(height: 16),
         _buildDateRow(),
         SizedBox(height: 16),
-        _buildPassengerLuggageRow(),
-        SizedBox(height: 16),
-        _buildClassRow(),
+        _buildFlexibleDaysRow(),
         SizedBox(height: 24),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: _searchFlights,
           style: ElevatedButton.styleFrom(
             backgroundColor: CustomColors.primaryColor,
             padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -159,17 +220,19 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 
-  Widget _buildDropdownRow(String label, String hint, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownRow(
+      String label, String hint, ValueChanged<String?> onChanged, String? value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildDropdown(label, hint, onChanged),
+        _buildDropdown(label, hint, onChanged, value),
         Icon(Icons.flight_takeoff, color: CustomColors.primaryColor),
       ],
     );
   }
 
-  Widget _buildDropdown(String label, String hint, ValueChanged<String?> onChanged) {
+  Widget _buildDropdown(
+      String label, String hint, ValueChanged<String?> onChanged, String? value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -184,101 +247,64 @@ class _BookingPageState extends State<BookingPage> {
         ),
         SizedBox(height: 4),
         DropdownButton<String>(
-          value: label == 'FROM' ? _fromLocation : _toLocation,
+          value: value,
           hint: Text(hint),
-          items: locations.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
+          items: _getDropdownItems(label),
           onChanged: onChanged,
         ),
       ],
     );
   }
 
+  List<DropdownMenuItem<String>> _getDropdownItems(String label) {
+    switch (label) {
+      case 'FROM':
+      case 'TO':
+        return locations.map<DropdownMenuItem<String>>((Map<String, dynamic> value) {
+          return DropdownMenuItem<String>(
+            value: value['name'],
+            child: Text(value['name']),
+          );
+        }).toList();
+      default:
+        return [];
+    }
+  }
+
   Widget _buildDateRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
-          child: _buildDateDetail('DEPART', _departDate),
-        ),
-        SizedBox(width: 16),
-        Expanded(
-          child: _buildDateDetail('RETURN', _returnDate),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDateDetail(String label, DateTime? date) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: CustomColors.primaryColor,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'SourceSansPro',
-          ),
-        ),
-        SizedBox(height: 4),
         GestureDetector(
-          onTap: () => _selectDate(context, label == 'DEPART'),
-          child: Container(
-            padding: EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(
-                color: Colors.grey,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.calendar_today, size: 20, color: Colors.grey),
-                SizedBox(width: 8),
-                Text(
-                  date != null ? '${date.day}/${date.month}/${date.year}' : 'DD/MM/YY',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontFamily: 'SourceSansPro',
-                  ),
+          onTap: () => _selectDate(context),
+          child: Row(
+            children: [
+              Icon(Icons.calendar_today, color: CustomColors.primaryColor),
+              SizedBox(width: 8),
+              Text(
+                _departDate == null
+                    ? 'Select Date'
+                    : '${_departDate!.day}-${_departDate!.month}-${_departDate!.year}',
+                style: TextStyle(
+                  color: CustomColors.primaryColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'SourceSansPro',
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPassengerLuggageRow() {
+  Widget _buildFlexibleDaysRow() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
-          child: _buildPassengerDetail('PASSENGER', _passengers),
-        ),
-        SizedBox(width: 16),
-        Expanded(
-          child: _buildLuggageDetail('LUGGAGE', _luggage),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPassengerDetail(String label, int value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
         Text(
-          label,
+          'Flexible Days',
           style: TextStyle(
             color: CustomColors.primaryColor,
             fontSize: 14,
@@ -286,93 +312,22 @@ class _BookingPageState extends State<BookingPage> {
             fontFamily: 'SourceSansPro',
           ),
         ),
-        SizedBox(height: 4),
-        Row(
-          children: [
-            Icon(Icons.person, size: 20, color: Colors.grey),
-            SizedBox(width: 8),
-            DropdownButton<int>(
+        DropdownButton<int>(
+          value: _flexibleDays,
+          hint: Text('Select Days'),
+          items: flexibleDaysOptions.map<DropdownMenuItem<int>>((int value) {
+            return DropdownMenuItem<int>(
               value: value,
-              items: List.generate(10, (index) => index + 1).map((int value) {
-                return DropdownMenuItem<int>(
-                  value: value,
-                  child: Text(value.toString()),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                setState(() {
-                  _passengers = newValue!;
-                });
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLuggageDetail(String label, int value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: CustomColors.primaryColor,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'SourceSansPro',
-          ),
-        ),
-        SizedBox(height: 4),
-        Row(
-          children: [
-            Icon(Icons.luggage, size: 20, color: Colors.grey),
-            SizedBox(width: 8),
-            DropdownButton<int>(
-              value: value,
-              items: List.generate(10, (index) => index + 1).map((int value) {
-                return DropdownMenuItem<int>(
-                  value: value,
-                  child: Text('$value KGs'),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                setState(() {
-                  _luggage = newValue!;
-                });
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildClassRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: classes.map((String label) {
-        return GestureDetector(
-          onTap: () {
+              child: Text('$value days'),
+            );
+          }).toList(),
+          onChanged: (int? newValue) {
             setState(() {
-              _class = label;
+              _flexibleDays = newValue;
             });
           },
-          child: _buildClassDetail(label),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildClassDetail(String label) {
-    return Text(
-      label,
-      style: TextStyle(
-        color: label == _class ? CustomColors.primaryColor : Colors.black,
-        fontSize: 16,
-        fontFamily: 'SourceSansPro',
-      ),
+        ),
+      ],
     );
   }
 }

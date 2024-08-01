@@ -87,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final imageExtension = path.extension(_profileImage!.path).replaceAll('.', '');
     final mediaType = MediaType('image', imageExtension);
 
-    final uri = Uri.parse('http://16.171.150.101/Flyhigh/backend/upload/$userId');
+    final uri = Uri.parse('http://16.171.150.101/Flyhigh/backend/upload/$user_id');
     final request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath(
           'profile_image', _profileImage!.path,

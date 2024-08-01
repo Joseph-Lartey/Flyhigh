@@ -77,13 +77,13 @@ $router->map('GET', '/user', function () use ($userController) {
 });
 
 // Upload user profile image
-$router->map('POST', '/upload/[*:userId]', function ($userId) use ($userController) {
+$router->map('POST', '/upload/[*:userId]', function ($user_id) use ($userController) {
     $file = $_FILES['profile_image'];
     
-    ValidationMiddleWare::handle(["userId" => $userId], ["userId" => "integer"]);
+    ValidationMiddleWare::handle(["userId" => $user_id], ["userId" => "integer"]);
     ValidationMiddleWare::handleImage($file);
     
-    echo json_encode($userController->uploadProfileImage($userId));
+    echo json_encode($userController->uploadProfileImage($user_id));
 });
 
 // Update user profile information

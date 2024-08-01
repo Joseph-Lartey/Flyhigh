@@ -148,7 +148,7 @@ $router->map('POST', '/flights/book', function () use ($bookingController) {
     // validate data
     ValidationMiddleWare::handle($data, [
         'user_id' => 'integer',
-        'flight_id' => 'integer',
+        'template_id' => 'integer',
         'departure_country_id' => 'integer',
         'arrival_country_id' => 'integer'
     ]);

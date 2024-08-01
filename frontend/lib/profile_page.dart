@@ -82,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final uri = Uri.parse('http://16.171.150.101/Flyhigh/backend/upload/$userId');
     final request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath(
-          'profile_image', _profileImage!.path,
+          'profile_images', _profileImage!.path,
           contentType: mediaType));
     final response = await request.send();
 

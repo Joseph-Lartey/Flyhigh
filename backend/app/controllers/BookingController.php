@@ -25,16 +25,14 @@ class BookingController {
 
     public function bookFlight($data) {
         $user_id = $data['user_id'];
-        $flight_id = $data['flight_id'];
+        $template_id = $data['template_id'];
         $departure_country_id = $data['departure_country_id'];
         $arrival_country_id = $data['arrival_country_id'];
-    
-        if ($this->flight->bookFlight($user_id, $flight_id, $departure_country_id, $arrival_country_id)) {
+
+        if ($this->flight->bookFlight($user_id, $template_id, $departure_country_id, $arrival_country_id)) {
             return array("message" => "Booking successful.");
         }
-    
+
         return array("message" => "Booking failed.");
     }
-    
 }
-?>

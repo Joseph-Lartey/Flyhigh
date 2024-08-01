@@ -59,14 +59,6 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: Icon(Icons.camera_alt),
-                title: Text('Take Photo'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
                 leading: Icon(Icons.photo_library),
                 title: Text('Choose from Gallery'),
                 onTap: () {
@@ -87,7 +79,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final imageExtension = path.extension(_profileImage!.path).replaceAll('.', '');
     final mediaType = MediaType('image', imageExtension);
 
-    final uri = Uri.parse('http://16.171.150.101/Flyhigh/backend/upload/$user_id');
+    final uri = Uri.parse('http://16.171.150.101/Flyhigh/backend/upload/$userId');
     final request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath(
           'profile_image', _profileImage!.path,

@@ -114,34 +114,41 @@ class UserController
 
     // Upload user profile image
     public function uploadProfileImage($id)
-    {
-        try {
-            if (!isset($_FILES['profile_image'])) {
-                throw new InvalidArgumentException("No image attached");
-            }
-
-            $file = $_FILES['profile_image'];
-            $dir = __DIR__ . '/../../public/profile_images/';
-            $targetFile = $dir . basename($file['name']) . '-' . $id;
-
-            // Move file from temp position to intended directory
-            if (!move_uploaded_file($file['tmp_name'], $targetFile)) {
-                header('HTTP/1.1 500 Server Error');
-                throw new Exception("Error moving image");
-            }
-
-            // Update user profile image path in database
-            $this->userModel->updateProfileImage($id, basename($targetFile));
-
-            return ["success" => true, "message" => "Successful profile upload"];
-        } catch (InvalidArgumentException $e) {
-            header('HTTP/1.1 422 Unprocessable Entity');
-            return ["success" => false, "message" => "File was not found in payload"];
-        } catch (Exception $e) {
-            return ["success" => false, "message" => $e->getMessage()];
+{
+    try {
+        if (!isset($_FILES['profile_images'])) {
+            throw new InvalidArgumentException("No image attached");
         }
-    }
 
+        $file = $_FILES['profile_images'];
+        $dir = __DIR__ . '/../../public/profile_images/';
+        
+        // Ensure the directory exists
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $filename = uniqid() . '-' . $id . '.' . pathinfo($file['name'], PATHINFO_EXTENSION);
+        $targetFile = $dir . $filename;
+
+        // Move file from temp position to intended directory
+        if (!move_uploaded_file($file['tmp_name'], $targetFile)) {
+            header('HTTP/1.1 500 Server Error');
+            throw new Exception("Error moving image");
+        }
+
+        // Update user profile image path in database
+        $this->userModel->updateProfileImage($id, $filename);
+
+        return ["success" => true, "message" => "Successful profile upload"];
+    } catch (InvalidArgumentException $e) {
+        header('HTTP/1.1 422 Unprocessable Entity');
+        return ["success" => false, "message" => $e->getMessage()];
+    } catch (Exception $e) {
+        header('HTTP/1.1 500 Server Error');
+        return ["success" => false, "message" => $e->getMessage()];
+    }
+}
     // Update user profile information
     public function updateProfile($id, $firstname, $lastname, $username)
     {

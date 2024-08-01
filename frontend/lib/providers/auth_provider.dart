@@ -40,44 +40,44 @@ class AuthProvider with ChangeNotifier {
   }
 
   // User login
-Future<void> login(String email, String password) async {
-  setLoading(true);
-  print('Login started with email: $email and password: $password');
+ Future<void> login(String email, String password) async {
+    setLoading(true);
+    print('Login started with email: $email and password: $password');
 
-  try {
-    final loginResponse = await _authService.login(email, password);
-    print('Login response: $loginResponse');
+    try {
+      final loginResponse = await _authService.login(email, password);
+      print('Login response: $loginResponse');
 
-    if (loginResponse['success'] == true) {
-      _loginSuccess = true;
-      final profileDetails = await _authService.getProfile(loginResponse['id']);
-      print('Profile details: $profileDetails');
-      _user = User.fromJson(profileDetails);
+      if (loginResponse['success'] == true) {
+        _loginSuccess = true;
+        final profileDetails = await _authService.getProfile(loginResponse['id']);
+        print('Profile details: $profileDetails');
+        _user = User.fromJson(profileDetails);
 
-      // Save user details to SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      print('Saving user ID: ${loginResponse['id']}');
-      await prefs.setString('userId', loginResponse['id'].toString());
-      await prefs.setString('firstName', profileDetails['firstname'] ?? '');
-      await prefs.setString('lastName', profileDetails['lastname'] ?? '');
-      await prefs.setString('username', profileDetails['username'] ?? '');
-      await prefs.setString('email', profileDetails['email'] ?? '');
-      await prefs.setString('profilePicturePath', profileDetails['profile_picture_path'] ?? '');
-      print('User details saved');
-      
-    } else {
+        // Save user details to SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        print('Saving user ID: ${loginResponse['id']}');
+        await prefs.setInt('userId', loginResponse['id']); // Correct this line
+        await prefs.setString('firstName', profileDetails['firstname'] ?? '');
+        await prefs.setString('lastName', profileDetails['lastname'] ?? '');
+        await prefs.setString('username', profileDetails['username'] ?? '');
+        await prefs.setString('email', profileDetails['email'] ?? '');
+        await prefs.setString('profilePicturePath', profileDetails['profile_picture_path'] ?? '');
+        print('User details saved');
+        
+      } else {
+        _loginSuccess = false;
+        _errorMessage = loginResponse['error'];
+        print('Login failed: $_errorMessage');
+      }
+      setLoading(false);
+    } catch (e) {
       _loginSuccess = false;
-      _errorMessage = loginResponse['error'];
-      print('Login failed: $_errorMessage');
+      _errorMessage = e.toString();
+      print('Login exception: $_errorMessage');
+      setLoading(false);
     }
-    setLoading(false);
-  } catch (e) {
-    _loginSuccess = false;
-    _errorMessage = e.toString();
-    print('Login exception: $_errorMessage');
-    setLoading(false);
   }
-}
 
   // User registration
   Future<void> register() async {

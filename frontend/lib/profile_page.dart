@@ -48,6 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         _profileImage = File(pickedFile.path);
       });
+      print('Image file path: ${_profileImage!.path}');
     }
   }
 
@@ -75,20 +76,34 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _uploadImage(int? userId) async {
-    if (_profileImage == null) return;
+    if (_profileImage == null) {
+      print('No image selected. Skipping image upload.');
+      return;
+    }
 
     final imageExtension = path.extension(_profileImage!.path).replaceAll('.', '');
+    print('Image extension: $imageExtension');
     final mediaType = MediaType('image', imageExtension);
+    print('Media type: $mediaType');
 
     final uri = Uri.parse('http://16.171.150.101/Flyhigh/backend/upload/$userId');
+    print('Request URL: $uri');
+
     final request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath(
-          'profile_images', _profileImage!.path,
-          contentType: mediaType));
+        'profile_images',
+        _profileImage!.path,
+        filename: path.basename(_profileImage!.path),
+      ));
+
+    print('Request: ${request.toString()}');
+    print('Files: ${request.files}');
+
+    print('Sending request...');
     final response = await request.send();
 
     if (response.statusCode == 200) {
-      print('Image uploaded successfully');
+      print('Image uploaded successfully.');
     } else {
       final responseBody = await response.stream.bytesToString();
       print('Failed to upload image. Status code: ${response.statusCode}');
@@ -101,13 +116,12 @@ class _ProfilePageState extends State<ProfilePage> {
     final email = authProvider.registrationDetails['email'];
     final firstname = authProvider.registrationDetails['firstname'];
     final lastname = authProvider.registrationDetails['lastname'];
-    final username = _usernameController.text; // Updated to get the username from the controller
+    final username = _usernameController.text;
     final password = authProvider.registrationDetails['password'];
-    final confirmPassword = password; // Assuming confirmPassword is the same as password for this context
+    final confirmPassword = password;
 
     print('Attempting registration with email: $email, username: $username');
-    print(
-        'Registration details - firstname: $firstname, lastname: $lastname, password: $password, confirmPassword: $confirmPassword');
+    print('Registration details - firstname: $firstname, lastname: $lastname, password: $password, confirmPassword: $confirmPassword');
 
     if (email != null &&
         password != null &&
@@ -120,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
         body: jsonEncode({
           'email': email,
           'password': password,
-          'confirm_password': confirmPassword, // Ensure confirmPassword is sent in the registration request
+          'confirm_password': confirmPassword,
           'firstname': firstname,
           'lastname': lastname,
           'username': username,
@@ -132,10 +146,18 @@ class _ProfilePageState extends State<ProfilePage> {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         if (responseBody['success']) {
-          // Registration successful, navigate to login page
+          await authProvider.login(email, password);
+          
+          final userId = authProvider.user?.userId;
+          if (userId != null) {
+            await _uploadImage(userId);
+          } else {
+            print('User ID is null after login.');
+          }
+
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const LoginPage()), // Replace with your login page
+            MaterialPageRoute(builder: (context) => const LoginPage()),
           );
         } else {
           print('Registration failed!');
@@ -150,6 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    // The build method remains unchanged
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -183,7 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 22,
-                    color:CustomColors.primaryColor,
+                    color: CustomColors.primaryColor,
                   ),
                 ),
               ],

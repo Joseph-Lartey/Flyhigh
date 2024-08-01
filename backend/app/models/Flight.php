@@ -106,20 +106,25 @@ class Flight {
                     b.departure_country_id, 
                     b.arrival_country_id, 
                     b.status, 
-                    b.created_at, 
-                    b.updated_at,
+                    b.created_at AS booking_date,
                     f.flight_number,
-                    f.departure_country AS departure_country_name,
-                    f.arrival_country AS arrival_country_name,
-                    f.departure_date,
-                    f.arrival_date
+                    dc.country_name AS departure_country_name,
+                    ac.country_name AS arrival_country_name
                   FROM bookings b
                   JOIN flight_templates f ON b.template_id = f.template_id
+                  JOIN countries dc ON b.departure_country_id = dc.country_id
+                  JOIN countries ac ON b.arrival_country_id = ac.country_id
                   WHERE b.user_id = :user_id";
                   
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":user_id", $user_id);
-        $stmt->execute();
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT); // Ensure user_id is bound as an integer
+    
+        try {
+            $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Database query error: " . $e->getMessage()); // Log the error for debugging
+            throw new Exception("Unable to execute the query. Please check the error log for more details.");
+        }
     
         $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     

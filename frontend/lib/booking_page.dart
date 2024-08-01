@@ -62,6 +62,20 @@ class _BookingPageState extends State<BookingPage> {
 
 Future<void> _searchFlights() async {
   try {
+    if (_departDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a departure date.')),
+      );
+      return;
+    }
+
+    if (_departDate!.isBefore(DateTime.now().subtract(Duration(days: 1)))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a future date.')),
+      );
+      return;
+    }
+
     final fromLocation = locations.firstWhere(
         (element) => element['name'] == _fromLocation,
         orElse: () => {'id': null})['id'];
@@ -96,6 +110,7 @@ Future<void> _searchFlights() async {
     );
   }
 }
+
 
   @override
   Widget build(BuildContext context) {

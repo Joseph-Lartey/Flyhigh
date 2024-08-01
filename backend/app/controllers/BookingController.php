@@ -35,4 +35,9 @@ class BookingController {
 
         return array("message" => "Booking failed.");
     }
-}
+
+    public function getUserBookings($user_id) {
+        return $this->flight->getUserBookings($user_id);
+    }
+}    
+?>

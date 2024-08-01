@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Add this import for date formatting
-import 'custom_colors.dart'; // Import your custom colors
+import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'custom_colors.dart';
+import 'my_flight.dart'; // Import MyFlightsPage
 
 class FlightSelectionPage extends StatelessWidget {
   final List<Map<String, dynamic>> flights;
@@ -88,9 +92,7 @@ class FlightSelectionPage extends StatelessWidget {
                     SizedBox(height: 16),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle flight selection
-                        },
+                        onPressed: () => _bookFlight(flight, context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: CustomColors.primaryColor,
                           shape: RoundedRectangleBorder(
@@ -169,5 +171,49 @@ class FlightSelectionPage extends StatelessWidget {
     final format = DateFormat.Hms(); // Time format HH:mm:ss
     final time = format.parse(timeString);
     return DateFormat('HH:mm').format(time);
+  }
+
+  Future<void> _bookFlight(Map<String, dynamic> flight, BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId'); // Use the correct key
+    if (userId == null) {
+      // Handle the error if the user_id is not found
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('User ID not found')),
+      );
+      return;
+    }
+
+    final payload = {
+      "user_id": int.parse(userId), // Convert to int if needed
+      "template_id": flight['template_id'],
+      "departure_country_id": flight['departure_country_id'],
+      "arrival_country_id": flight['arrival_country_id'],
+    };
+
+    final url = 'http://16.171.150.101/Flyhigh/backend/flights/book';
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode == 200) {
+      // Handle successful booking
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Booking successful')),
+      );
+
+      // Navigate to MyFlightsPage
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyFlightsPage()),
+      );
+    } else {
+      // Handle booking failure
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Booking failed: ${response.body}')),
+      );
+    }
   }
 }

@@ -96,5 +96,35 @@ class Flight {
         }
         return false;
     }
+
+
+    public function getUserBookings($user_id) {
+        $query = "SELECT 
+                    b.booking_id, 
+                    b.user_id, 
+                    b.template_id, 
+                    b.departure_country_id, 
+                    b.arrival_country_id, 
+                    b.status, 
+                    b.created_at, 
+                    b.updated_at,
+                    f.flight_number,
+                    f.departure_country AS departure_country_name,
+                    f.arrival_country AS arrival_country_name,
+                    f.departure_date,
+                    f.arrival_date
+                  FROM bookings b
+                  JOIN flight_templates f ON b.template_id = f.template_id
+                  WHERE b.user_id = :user_id";
+                  
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":user_id", $user_id);
+        $stmt->execute();
+    
+        $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        return $bookings;
+    }
+    
 }
 ?>

@@ -4,10 +4,32 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 import 'custom_colors.dart'; // Adjust the import path as necessary
 import 'booking_page.dart';
 import 'userprofile.dart'; 
-class MyFlightsPage extends StatelessWidget {
+class MyFlightsPage extends StatefulWidget {
   const MyFlightsPage({Key? key}) : super(key: key);
 
   @override
+  _MyFlightsPageState createState() => _MyFlightsPageState();
+}
+class _MyFlightsPageState extends State<MyFlightsPage> { // Corrected the class name
+  String _firstName = '';
+  String _lastName = '';
+ 
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserDetails();
+  }
+
+  Future<void> _loadUserDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _firstName = prefs.getString('firstName') ?? '';
+      _lastName = prefs.getString('lastName') ?? '';
+    });
+  }
+
+  
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true, // This extends the body behind the AppBar
@@ -27,7 +49,7 @@ class MyFlightsPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    'User Name', // Replace with dynamic user name
+                    '$_firstName $_lastName', // Dynamic user name
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,

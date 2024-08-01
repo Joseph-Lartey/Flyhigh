@@ -161,6 +161,14 @@ $router->map('GET', '/countries', function () use ($countryController) {
     echo json_encode($countryController->getAllCountries());
 });
 
+// Fetch user bookings
+$router->map('GET', '/bookings/[i:userId]', function ($userId) use ($bookingController) {
+    ValidationMiddleWare::handle(['userId' => $userId], ['userId' => 'integer']);
+    echo json_encode($bookingController->getUserBookings($userId));
+});
+
+
+
 $match = $router->match();
 
 if ($match && is_callable($match['target'])) {

@@ -1,8 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'custom_colors.dart';
 
-class UserProfilePage extends StatelessWidget {
+class UserProfilePage extends StatefulWidget {
   const UserProfilePage({Key? key}) : super(key: key);
+
+  @override
+  _UserProfilePageState createState() => _UserProfilePageState();
+}
+
+class _UserProfilePageState extends State<UserProfilePage> {
+  String _firstName = '';
+  String _lastName = '';
+  String _username = '';
+  String _email = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserDetails();
+  }
+
+  Future<void> _loadUserDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _firstName = prefs.getString('firstName') ?? '';
+      _lastName = prefs.getString('lastName') ?? '';
+      _username = prefs.getString('username') ?? '';
+      _email = prefs.getString('email') ?? '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,49 +41,60 @@ class UserProfilePage extends StatelessWidget {
             Stack(
               children: [
                 Container(
-                  color: CustomColors.primaryColor,
-                  height: 250,
+                  height: 350,
+                  decoration: BoxDecoration(
+                    color: CustomColors.primaryColor,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(40),
+                      bottomRight: Radius.circular(40),
+                    ),
+                  ),
                 ),
                 Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 50.0, bottom: 20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      padding: const EdgeInsets.only(top: 50.0, left: 16.0, bottom: 30.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          const CircleAvatar(
-                            radius: 50,
-                            backgroundImage: AssetImage('assets/images/img3.png'), // Replace with your image asset
-                          ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Jhon Abraham',
-                            style: TextStyle(
-                              fontSize: 22,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            '@jhonabraham20',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white70,
-                            ),
+                          IconButton(
+                            icon: Icon(Icons.arrow_back, color: Colors.white),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
                           ),
                         ],
                       ),
                     ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(40),
-                          topRight: Radius.circular(40),
+                    Column(
+                      children: [
+                        const CircleAvatar(
+                          radius: 50,
+                          backgroundImage: AssetImage('assets/images/img3.png'), // Replace with your image asset
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        Text(
+                          '$_firstName $_lastName',
+                          style: TextStyle(
+                            fontSize: 22,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          '@$_username',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      color: Colors.white,
                       padding: const EdgeInsets.all(16.0),
+                      height: MediaQuery.of(context).size.height - 280,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -71,19 +109,15 @@ class UserProfilePage extends StatelessWidget {
                           const Divider(),
                           ProfileInfoRow(
                             label: 'First Name',
-                            value: 'Jhon',
+                            value: _firstName,
                           ),
                           ProfileInfoRow(
                             label: 'Last Name',
-                            value: 'Abraham',
+                            value: _lastName,
                           ),
                           ProfileInfoRow(
                             label: 'Email Address',
-                            value: 'jhon.abraham@example.com',
-                          ),
-                          ProfileInfoRow(
-                            label: 'Address',
-                            value: '123 Street Name, City, Country',
+                            value: _email,
                           ),
                           const SizedBox(height: 20),
                           const Text(

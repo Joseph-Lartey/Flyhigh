@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as path;
 import 'login_page.dart';
+import 'custom_colors.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -182,7 +183,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 22,
-                    color: Colors.blue,
+                    color:CustomColors.primaryColor,
                   ),
                 ),
               ],
@@ -224,7 +225,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       height: 30,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.blue,
+                        color: CustomColors.primaryColor,
                       ),
                       child: Center(
                         child: Icon(
@@ -245,7 +246,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 'Username',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.blue,
+                  color: CustomColors.primaryColor,
                 ),
               ),
             ),
@@ -270,7 +271,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 minimumSize: Size(double.infinity, 50),
-                backgroundColor: Colors.blue,
+                backgroundColor: CustomColors.primaryColor,
               ),
               onPressed: _isButtonActive ? _registerAndNavigateToLogin : null,
               child: Text(

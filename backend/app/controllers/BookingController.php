@@ -26,18 +26,15 @@ class BookingController {
     public function bookFlight($data) {
         $user_id = $data['user_id'];
         $flight_id = $data['flight_id'];
-        $class_id = $data['class_id'];
-        $num_people = $data['num_people'];
-        $weight = $data['weight'];
-
-        if ($this->flight->bookFlight($user_id, $flight_id, $class_id, $num_people, $weight)) {
-            if ($this->flight->updateSeatAvailability($flight_id, $class_id, $num_people)) {
-                return array("message" => "Booking successful.");
-            }
-            return array("message" => "Booking successful, but failed to update seat availability.");
+        $departure_country_id = $data['departure_country_id'];
+        $arrival_country_id = $data['arrival_country_id'];
+    
+        if ($this->flight->bookFlight($user_id, $flight_id, $departure_country_id, $arrival_country_id)) {
+            return array("message" => "Booking successful.");
         }
-
+    
         return array("message" => "Booking failed.");
     }
+    
 }
 ?>

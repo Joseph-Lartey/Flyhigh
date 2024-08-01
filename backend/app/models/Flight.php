@@ -52,22 +52,24 @@ class Flight {
     }
 
 
-    public function bookFlight($user_id, $flight_id, $class_id, $num_people, $weight) {
-        $query = "INSERT INTO bookings (user_id, flight_id, class_id, weight, status)
-                  VALUES (:user_id, :flight_id, :class_id, :weight, 'booked')";
-
+    public function bookFlight($user_id, $flight_id, $departure_country_id, $arrival_country_id) {
+        $query = "INSERT INTO bookings (user_id, flight_id, departure_country_id, arrival_country_id, status)
+                  VALUES (:user_id, :flight_id, :departure_country_id, :arrival_country_id, 'booked')";
+    
         $stmt = $this->conn->prepare($query);
-
+    
         $stmt->bindParam(":user_id", $user_id);
         $stmt->bindParam(":flight_id", $flight_id);
-        $stmt->bindParam(":class_id", $class_id);
-        $stmt->bindParam(":weight", $weight);
-
+        $stmt->bindParam(":departure_country_id", $departure_country_id);
+        $stmt->bindParam(":arrival_country_id", $arrival_country_id);
+    
         if ($stmt->execute()) {
             return true;
         }
         return false;
     }
+    
+    
 
     public function updateSeatAvailability($flight_id, $class_id, $num_people) {
         $class_column = "";

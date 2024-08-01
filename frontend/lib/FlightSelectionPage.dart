@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'custom_colors.dart';
 import 'package:intl/intl.dart'; // Add this import for date formatting
+import 'custom_colors.dart'; // Import your custom colors
 
 class FlightSelectionPage extends StatelessWidget {
   final List<Map<String, dynamic>> flights;
@@ -33,12 +33,15 @@ class FlightSelectionPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '${flight['airline']}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: CustomColors.primaryColor,
+                        Expanded(
+                          child: Text(
+                            '${flight['airline']}',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: CustomColors.primaryColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Text(
@@ -54,9 +57,13 @@ class FlightSelectionPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildAirportInfo(flight['departure_airport'], _formatDateTime(flight['departure_time'])),
+                        Expanded(
+                          child: _buildAirportInfo(flight['departure_airport'], _formatTime(flight['departure_time'])),
+                        ),
                         Icon(Icons.flight_takeoff, color: CustomColors.primaryColor),
-                        _buildAirportInfo(flight['arrival_airport'], _formatDateTime(flight['arrival_time'])),
+                        Expanded(
+                          child: _buildAirportInfo(flight['arrival_airport'], _formatTime(flight['arrival_time'])),
+                        ),
                       ],
                     ),
                     SizedBox(height: 16),
@@ -75,9 +82,9 @@ class FlightSelectionPage extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: 16),
-                    _buildPriceRow('Business', flight['price_business'], flight['seats_available_business']),
-                    _buildPriceRow('Economy', flight['price_economy'], flight['seats_available_economy']),
-                    _buildPriceRow('Elite', flight['price_elite'], flight['seats_available_elite']),
+                    _buildPriceRow('Business', flight['price_business'].toString(), flight['seats_business']),
+                    _buildPriceRow('Economy', flight['price_economy'].toString(), flight['seats_economy']),
+                    _buildPriceRow('Elite', flight['price_elite'].toString(), flight['seats_elite']),
                     SizedBox(height: 16),
                     Center(
                       child: ElevatedButton(
@@ -93,7 +100,7 @@ class FlightSelectionPage extends StatelessWidget {
                         ),
                         child: Text(
                           'Book',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
                     ),
@@ -116,6 +123,7 @@ class FlightSelectionPage extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         Text(
@@ -123,6 +131,7 @@ class FlightSelectionPage extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             color: Colors.grey,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -140,6 +149,7 @@ class FlightSelectionPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           Text(
@@ -147,6 +157,7 @@ class FlightSelectionPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -154,8 +165,9 @@ class FlightSelectionPage extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(String dateTimeString) {
-    DateTime dateTime = DateTime.parse(dateTimeString);
-    return DateFormat('MMM d, HH:mm').format(dateTime);
+  String _formatTime(String timeString) {
+    final format = DateFormat.Hms(); // Time format HH:mm:ss
+    final time = format.parse(timeString);
+    return DateFormat('HH:mm').format(time);
   }
 }

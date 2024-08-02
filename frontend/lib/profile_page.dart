@@ -48,7 +48,6 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         _profileImage = File(pickedFile.path);
       });
-      print('Image file path: ${_profileImage!.path}');
     }
   }
 
@@ -77,7 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _uploadImage(int? userId) async {
     if (_profileImage == null) {
-      print('No image selected. Skipping image upload.');
+      print('No image selected.');
       return;
     }
 
@@ -91,13 +90,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath(
-        'profile_images',
-        _profileImage!.path,
-        filename: path.basename(_profileImage!.path),
-      ));
-
-    print('Request: ${request.toString()}');
-    print('Files: ${request.files}');
+          'profile_images', _profileImage!.path,
+          contentType: mediaType));
 
     print('Sending request...');
     final response = await request.send();
@@ -116,12 +110,13 @@ class _ProfilePageState extends State<ProfilePage> {
     final email = authProvider.registrationDetails['email'];
     final firstname = authProvider.registrationDetails['firstname'];
     final lastname = authProvider.registrationDetails['lastname'];
-    final username = _usernameController.text;
+    final username = _usernameController.text; // Updated to get the username from the controller
     final password = authProvider.registrationDetails['password'];
-    final confirmPassword = password;
+    final confirmPassword = password; // Assuming confirmPassword is the same as password for this context
 
     print('Attempting registration with email: $email, username: $username');
-    print('Registration details - firstname: $firstname, lastname: $lastname, password: $password, confirmPassword: $confirmPassword');
+    print(
+        'Registration details - firstname: $firstname, lastname: $lastname, password: $password, confirmPassword: $confirmPassword');
 
     if (email != null &&
         password != null &&
@@ -134,7 +129,7 @@ class _ProfilePageState extends State<ProfilePage> {
         body: jsonEncode({
           'email': email,
           'password': password,
-          'confirm_password': confirmPassword,
+          'confirm_password': confirmPassword, // Ensure confirmPassword is sent in the registration request
           'firstname': firstname,
           'lastname': lastname,
           'username': username,
@@ -148,6 +143,7 @@ class _ProfilePageState extends State<ProfilePage> {
         if (responseBody['success']) {
           await authProvider.login(email, password);
           
+          // Ensure userId is fetched from the AuthProvider after successful login
           final userId = authProvider.user?.userId;
           if (userId != null) {
             await _uploadImage(userId);
@@ -155,9 +151,10 @@ class _ProfilePageState extends State<ProfilePage> {
             print('User ID is null after login.');
           }
 
+          // Registration successful, navigate to login page
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
+            MaterialPageRoute(builder: (context) => const LoginPage()), // Replace with your login page
           );
         } else {
           print('Registration failed!');
@@ -172,7 +169,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // The build method remains unchanged
     return Scaffold(
       appBar: AppBar(
         elevation: 0,

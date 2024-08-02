@@ -174,46 +174,47 @@ class FlightSelectionPage extends StatelessWidget {
   }
 
   Future<void> _bookFlight(Map<String, dynamic> flight, BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userId'); // Use the correct key
-    if (userId == null) {
-      // Handle the error if the user_id is not found
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('User ID not found')),
-      );
-      return;
-    }
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  int? userId = prefs.getInt('userId'); // Retrieve as int
 
-    final payload = {
-      "user_id": int.parse(userId), // Convert to int if needed
-      "template_id": flight['template_id'],
-      "departure_country_id": flight['departure_country_id'],
-      "arrival_country_id": flight['arrival_country_id'],
-    };
+  if (userId == null) {
+    // Handle the error if the user_id is not found
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('User ID not found')),
+    );
+    return;
+  }
 
-    final url = 'http://16.171.150.101/Flyhigh/backend/flights/book';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(payload),
+  final payload = {
+    "user_id": userId, // Use directly as int
+    "template_id": flight['template_id'],
+    "departure_country_id": flight['departure_country_id'],
+    "arrival_country_id": flight['arrival_country_id'],
+  };
+
+  final url = 'http://16.171.150.101/Flyhigh/backend/flights/book';
+  final response = await http.post(
+    Uri.parse(url),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(payload),
+  );
+
+  if (response.statusCode == 200) {
+    // Handle successful booking
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Booking successful')),
     );
 
-    if (response.statusCode == 200) {
-      // Handle successful booking
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Booking successful')),
-      );
-
-      // Navigate to MyFlightsPage
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MyFlightsPage()),
-      );
-    } else {
-      // Handle booking failure
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Booking failed: ${response.body}')),
-      );
-    }
+    // Navigate to MyFlightsPage
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MyFlightsPage()),
+    );
+  } else {
+    // Handle booking failure
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Booking failed: ${response.body}')),
+    );
   }
+}
 }

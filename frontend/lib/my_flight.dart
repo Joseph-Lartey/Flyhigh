@@ -34,31 +34,32 @@ class _MyFlightsPageState extends State<MyFlightsPage> {
     });
   }
 
-  Future<void> _fetchUserBookings() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? userIdString = prefs.getString('userId');
+Future<void> _fetchUserBookings() async {
+  final prefs = await SharedPreferences.getInstance();
+  int? userId = prefs.getInt('userId'); // Retrieve as int
 
-    if (userIdString != null && userIdString.isNotEmpty) {
-      try {
-        int userId = int.parse(userIdString);
-        final response = await http.get(Uri.parse('http://16.171.150.101/Flyhigh/backend/bookings/$userId'));
+  if (userId != null) {
+    String userIdString = userId.toString(); // Convert to string
+    try {
+      final response = await http.get(Uri.parse('http://16.171.150.101/Flyhigh/backend/bookings/$userIdString'));
 
-        if (response.statusCode == 200) {
-          setState(() {
-            _bookings = json.decode(response.body);
-          });
-        } else {
-          print('Failed to load bookings. Status code: ${response.statusCode}');
-        }
-      } catch (e) {
-        print('Error parsing user ID: $e');
+      if (response.statusCode == 200) {
+        setState(() {
+          _bookings = json.decode(response.body);
+        });
+      } else {
+        print('Failed to load bookings. Status code: ${response.statusCode}');
       }
-    } else {
-      print('User ID not found in SharedPreferences or is empty');
-      // Handle the case where user ID is not available
-      // You might want to navigate to the login page or show an error message
+    } catch (e) {
+      print('Error fetching bookings: $e');
     }
+  } else {
+    print('User ID not found in SharedPreferences or is empty');
+    // Handle the case where user ID is not available
+    // You might want to navigate to the login page or show an error message
   }
+}
+
 
   Future<void> _refreshBookings() async {
     setState(() {
@@ -336,44 +337,29 @@ class _MyFlightsPageState extends State<MyFlightsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Logout'),
+          title: const Text('Logout Confirmation'),
           content: const Text('Are you sure you want to logout?'),
           actions: <Widget>[
             TextButton(
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop();
                 await _clearCredentials();
-                Navigator.of(context).pushAndRemoveUntil(
-                  createFadeRoute(const LoginPage()),
+                Navigator.of(context).pop();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
                   (Route<dynamic> route) => false,
                 );
               },
-              child: const Text('Yes'),
+              child: const Text('Logout'),
             ),
           ],
         );
-      },
-    );
-  }
-
-  Route createFadeRoute(Widget page) {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(0.0, 1.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
-
-        var tween = Tween(begin: begin, end: end);
-        var offsetAnimation = animation.drive(tween.chain(CurveTween(curve: curve)));
-
-        return SlideTransition(position: offsetAnimation, child: child);
       },
     );
   }
